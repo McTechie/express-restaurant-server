@@ -43,48 +43,26 @@ app.use(session({
   store: new FileStore()
 }));
 
-// Authorization starts
+app.use('/', indexRouter);
+app.use('/users', usersRouter);
+
+// Authorization Starts
 function auth (req, res, next) {
-  // Use (req.signedCookies) if cookie-parser is used
-  console.log(req.session);
+    console.log(req.session);
 
-  //Use (!req.signedCookies.user) for cookie-parser
-  if (!req.session.user) {
-    var authHeader = req.headers.authorization;
-    if (!authHeader) {
+  if(!req.session.user) {
       var err = new Error('You are not authenticated!');
-      res.setHeader('WWW-Authenticate', 'Basic');
-      err.status = 401;
-      next(err);
-      return;
-    }
-
-    // Splitting the username and password
-    var auth = new Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
-    var user = auth[0];
-    var pass = auth[1];
-
-    if (user === 'admin' && pass === 'password') {
-      // Use res.cookie('user','admin',{signed: true}); if cookie-parser is used
-      req.session.user = 'admin';
-      next(); // authorized to pass onto the next middleware
-    }
-    else {
-      var err = new Error('You are not authenticated!');
-      res.setHeader('WWW-Authenticate', 'Basic');
-      err.status = 401;
-      next(err);
-    }
+      err.status = 403;
+      return next(err);
   }
   else {
-    //Use (req.signedCookies.user) for cookie-parser
-    if (req.session.user === 'admin') {
+    if (req.session.user === 'authenticated') {
       next();
     }
     else {
       var err = new Error('You are not authenticated!');
-      err.status = 401;
-      next(err);
+      err.status = 403;
+      return next(err);
     }
   }
 }
@@ -94,8 +72,6 @@ app.use(auth);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
 app.use('/dishes',dishRouter);
 app.use('/promotions',promoRouter);
 app.use('/leaders',leaderRouter);
