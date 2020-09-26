@@ -8,10 +8,17 @@ var router = express.Router();
 router.use(bodyParser.json());
 
 /* GET users listing. */
-router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
+router.get('/', authenticate.verifyUser, authenticate.verifyAdmin, function(req, res, next) {
+  Users.find({})
+  .then((dishes) => {
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.json(users);
+  }, (err) => next(err))
+  .catch((err) => next(err));
 });
 
+// New user Signup API endpoint
 router.post('/signup', (req, res, next) => {
   User.register(new User({username: req.body.username}),
     req.body.password, (err, user) => {
@@ -42,16 +49,21 @@ router.post('/signup', (req, res, next) => {
   });
 });
 
+// Login API endpoint
 router.post('/login', passport.authenticate('local'), (req, res) => {
+  // Create a token
   var token = authenticate.getToken({_id: req.user._id});
   res.statusCode = 200;
   res.setHeader('Content-Type', 'application/json');
   res.json({success: true, token: token, status: 'You are successfully logged in!'});
 });
 
+// Logout API endpoint
 router.get('/logout', (req, res) => {
   if (req.session) {
+    // End the session by using the destroy() function remove the session in the server side
     req.session.destroy();
+    // Delete the cookie in the client side
     res.clearCookie('session-id');
     res.redirect('/');
   }
