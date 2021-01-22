@@ -1,4 +1,4 @@
-# ConFusion Server
+# Ristorante conFusion (REST API Server)
 
 > This server has been created as a part of the ***Server-Side Development with NodeJS, Express and MongoDB*** course provided by The Hong Kong University of Science and Technology.
 
